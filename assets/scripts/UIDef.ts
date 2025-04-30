@@ -13,7 +13,7 @@ export class UI_TopInfo extends tgxUIController { }
 export class UI_ExtraTime extends tgxUIController { }
 export class UI_Magnetic extends tgxUIController { }
 tgxModuleContext.attachModule(UI_AboutMe, ModuleDef.MODULE_ALIENS);
-tgxModuleContext.attachModule(UI_Setting, ModuleDef.MODULE_ALIENS);
+tgxModuleContext.attachModule(UI_Setting, ModuleDef.EXTRA);
 tgxModuleContext.attachModule(UI_Magnetic, ModuleDef.MODULE_ALIENS);
 tgxModuleContext.attachModule(UI_BattleGambit, ModuleDef.MODULE_ALIENS);
 tgxModuleContext.attachModule(UI_PowerUp, ModuleDef.MODULE_ALIENS);

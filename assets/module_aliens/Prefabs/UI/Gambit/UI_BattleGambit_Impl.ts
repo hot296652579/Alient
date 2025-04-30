@@ -43,6 +43,7 @@ export class UI_BattleGambit_Impl extends UI_BattleGambit {
     private startCountdown() {
         this.hide();
         TimerMgr.inst.startCountdown(); 
+        EventDispatcher.instance.emit(GameEvent.EVENT_GAME_COUNTDOWN_START);
     }
 
     //增加情报和侦探免费次数

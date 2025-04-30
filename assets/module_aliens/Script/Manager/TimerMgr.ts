@@ -127,6 +127,6 @@ export class TimerMgr {
         director.getScheduler().unscheduleAllForTarget(this);
         this.addTimeCount = 0;
         this.countDownTime = LevelManager.instance.levelModel.levelTime;
-        this.countDownTime = 20; //测试
+        this.countDownTime = 300; //测试
     }
 }

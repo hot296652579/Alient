@@ -14,6 +14,12 @@ export class GameEvent {
     /**初始化剩余怪物 */
     static readonly EVENT_INIT_REMAIN_ENEMY = 'EVENT_INIT_REMAIN_ENEMY';
 
+    /** 击杀最后一个怪物*/
+    static readonly EVENT_LAST_ENEMY_KILLED = 'EVENT_LAST_ENEMY_KILLED';
+
+    /** 游戏倒计时开始*/
+    static readonly EVENT_GAME_COUNTDOWN_START = 'EVENT_GAME_COUNTDOWN_START';
+
     /** 瞄准镜头*/
     static readonly EVENT_CAMERA_AIM = 'EVENT_CAMERA_AIM';
 

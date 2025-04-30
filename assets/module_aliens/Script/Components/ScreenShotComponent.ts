@@ -1,4 +1,4 @@
-import { _decorator, Camera, Component, Node, RenderTexture, Sprite, SpriteFrame, Vec3 } from 'cc';
+import { _decorator, Camera, Component, Node, Quat, RenderTexture, Sprite, SpriteFrame, Vec3 } from 'cc';
 import { AliensGlobalInstance } from '../AliensGlobalInstance';
 import { EventDispatcher } from 'db://assets/core_tgx/easy_ui_framework/EventDispatcher';
 import { GameEvent } from '../Enum/GameEvent';
@@ -16,7 +16,11 @@ export class ScreenShotComponent extends Component {
 
     private _originalTargetTexture: RenderTexture | null = null;
     private _originalCameraPosition: Vec3 = new Vec3();
-    private _originalCameraRotation: Vec3 = new Vec3();
+    // private _originalCameraRotation: Vec3 = new Vec3();
+
+    private _originalCameraRotation: Quat = new Quat(); 
+
+    private _shouldFlipImage: boolean = true; 
 
     private _index:number = 0;
 
@@ -40,60 +44,50 @@ export class ScreenShotComponent extends Component {
     //截图
     public async screenShot() {
         this.node.active = true;
-        //获取相机组件 
         const camera = await this.getSceneCamera();
-        //获取目标节点
         this._targetNode = await this.getTargetNode();
 
-        const spriteFrame = this.sprite.spriteFrame!;
-        const sp = new SpriteFrame();
-        sp.reset({
-            originalSize: spriteFrame.originalSize,
-            rect: spriteFrame.rect,
-            offset: spriteFrame.offset,
-            isRotate: spriteFrame.rotated,
-            borderTop: spriteFrame.insetTop,
-            borderLeft: spriteFrame.insetLeft,
-            borderBottom: spriteFrame.insetBottom,
-            borderRight: spriteFrame.insetRight,
-        });
-    
-        const renderTex = this._renderTex = new RenderTexture();
+        if (!this._targetNode) return;
+
+        // 创建新的RenderTexture
+        const renderTex = new RenderTexture();
         renderTex.reset({
-            width: 280,  // 直接设置为最终大小
-            height: 180,
+            width: 150,
+            height: 110,
         });
 
-        if (this._targetNode) {
-            // 设置渲染纹理
-            sp.texture = renderTex;
-            // 设置flipUV来翻转图像
-            sp.flipUVY = true;
-            this.sprite.spriteFrame = sp;
+        // 创建新的SpriteFrame并设置翻转
+        const newSpriteFrame = new SpriteFrame();
+        newSpriteFrame.texture = renderTex;
+        // console.log(`this._shouldFlipImage:${this._shouldFlipImage}`);
+        newSpriteFrame.flipUVY = this._shouldFlipImage; // 使用SpriteFrame的翻转功能
+        
+        // 保存原始相机状态
+        this._originalTargetTexture = camera.targetTexture;
+        camera.node.getWorldPosition(this._originalCameraPosition);
+        camera.node.getWorldRotation(this._originalCameraRotation);
 
-            // 移动相机对准目标节点
-            const targetPos = this._targetNode.worldPosition.clone();
-            // 计算相机新位置：从目标位置向后移动2个单位
-            const cameraOffset = new Vec3(0, 0, 10); // 调整这个值可以改变相机距离
-            const cameraPos = new Vec3();
-            Vec3.add(cameraPos, targetPos, cameraOffset);
+        // 设置相机位置和朝向
+        const targetPos = this._targetNode.worldPosition.clone();
+        const cameraPos = targetPos.add(new Vec3(0, 0, 10));
+        camera.node.setWorldPosition(cameraPos);
+        camera.node.lookAt(targetPos, Vec3.UP);
+        camera.targetTexture = renderTex;
 
-            camera.node.setWorldPosition(cameraPos);
-            camera.node.lookAt(targetPos, Vec3.UP);
-            camera.targetTexture = renderTex;
-            
-            // 确保渲染完成
-            this.scheduleOnce(() => {
-                // 恢复相机状态
-                camera.targetTexture = this._originalTargetTexture;
-                camera.node.setWorldPosition(this._originalCameraPosition);
-                camera.node.setRotationFromEuler(this._originalCameraRotation);
-                // 强制更新材质
-                this.sprite.markForUpdateRenderData();
-            }, 0.1);
-        }
+        // 等待一帧确保渲染完成
+        await new Promise(resolve => this.scheduleOnce(resolve, 0));
+
+        // 更新Sprite显示
+        this.sprite.spriteFrame = newSpriteFrame;
+        this.sprite.markForUpdateRenderData(true);
+
+        // 恢复相机状态
+        camera.targetTexture = this._originalTargetTexture;
+        camera.node.setWorldPosition(this._originalCameraPosition);
+        camera.node.setRotation(this._originalCameraRotation);
     }
 
+    private _shootCount: number = 0;
     //击杀了场景怪物 隐藏侦探节点
     private shootEnemy(enemy:Node){
         if(!this.node.active || !this._targetNode) return;
@@ -101,7 +95,11 @@ export class ScreenShotComponent extends Component {
         if(enemy == this._targetNode){
             this.scheduleOnce(() => {
                 tgxUITips.show('击杀的怪物是侦探上的!');
-                this.node.active = false; 
+                this._shootCount++; // 增加计数
+                if(this._shootCount > 0){
+                    this._shouldFlipImage = false; 
+                }
+                this.node.active = false;
             },1);
         }
     }
@@ -133,10 +131,12 @@ export class ScreenShotComponent extends Component {
     }
 
     //更新相机最新的位置和旋转角度
-    public saveCameraState(pos:Vec3,rotation:Vec3){
+    public saveCameraState(pos: Vec3, rotation: Vec3) {
         this._originalCameraPosition = pos;
-        this._originalCameraRotation = rotation;
-        // console.log('保存相机最新的位置和旋转角度:',pos,',',rotation);
+        // 将Vec3欧拉角转换为Quat
+        const quat = new Quat();
+        Quat.fromEuler(quat, rotation.x, rotation.y, rotation.z);
+        this._originalCameraRotation.set(quat);
     }
 
     protected onDestroy(): void {

@@ -1,4 +1,4 @@
-import { _decorator, Camera, Component, Node, UITransform, Vec3, view } from 'cc';
+import { _decorator, Camera, Component, Node, tween, UIOpacity, UITransform, Vec3, view } from 'cc';
 import { EventDispatcher } from 'db://assets/core_tgx/easy_ui_framework/EventDispatcher';
 import { GameEvent } from '../Enum/GameEvent';
 import { AliensGlobalInstance } from '../AliensGlobalInstance';
@@ -7,6 +7,11 @@ const { ccclass, property } = _decorator;
 
 @ccclass('RadarComponent')
 export class RadarComponent extends Component {
+
+    @property(Node)
+    activeNode:Node = null!;
+
+    private _tween: any = null;
 
     //渲染的目标节点
     private _targetNode: Node = null!;
@@ -19,14 +24,39 @@ export class RadarComponent extends Component {
         this.registerEvent();
     }
 
+    protected onEnable(): void {
+        this.activeNode.active = true;
+        this.startFadeAnimation();
+    }
+
+    private startFadeAnimation() {
+        if (!this.activeNode) return;
+        
+        if (this._tween) {
+            this._tween.stop();
+        }
+        
+        const uiOpacity = this.activeNode.getComponent(UIOpacity);
+        uiOpacity.opacity = 255;
+        
+        this._tween = tween(uiOpacity)
+            .to(0.5, { opacity: 0 })
+            .to(0.5, { opacity: 255 })
+            .union()
+            .repeatForever()
+            .start();
+    }
+
     private registerEvent(){
         EventDispatcher.instance.on(GameEvent.EVENT_CAMERA_SCREENSHOT_RADAR,this.onRadar,this);
         EventDispatcher.instance.on(GameEvent.EVENT_CAMERA_SHOOT_ENEMY,this.cancelRadar,this);
+        EventDispatcher.instance.on(GameEvent.EVENT_LAST_ENEMY_KILLED,this.cancelRadar,this);
     }
 
     private unregisterEvent(){
         EventDispatcher.instance.off(GameEvent.EVENT_CAMERA_SCREENSHOT_RADAR,this.onRadar,this);
         EventDispatcher.instance.off(GameEvent.EVENT_CAMERA_SHOOT_ENEMY,this.cancelRadar,this);
+        EventDispatcher.instance.off(GameEvent.EVENT_LAST_ENEMY_KILLED,this.cancelRadar,this);
     }
 
     private async onRadar(){
@@ -98,6 +128,16 @@ export class RadarComponent extends Component {
     }
 
     protected onDestroy(): void {
+        if (this._tween) {
+            this._tween.stop();
+            this._tween = null;
+        }
+        if (this.activeNode) {
+            const uiOpacity = this.activeNode.getComponent(UIOpacity);
+            if (uiOpacity) {
+                uiOpacity.opacity = 255;
+            }
+        }
         this.unregisterEvent();
     }
 }

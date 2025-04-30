@@ -35,6 +35,7 @@ export class AliensGlobalInstance extends Component {
         this.radarNode = find("Canvas/GameUI/BattleUI/Radar");
         this.lbTestShoot = find("Canvas/GameUI/BattleUI/LbTestShoot").getComponent(Label)!;
         this.renderNode = find("Canvas/GameUI/BattleUI/Render");
+        this.guns = find("Canvas/GameUI/BattleUI/Guns");
     }
 
     public camera: Camera = null!; //相机
@@ -49,6 +50,7 @@ export class AliensGlobalInstance extends Component {
     public aimTarget: Node = null!; //瞄准放大节点
     public radarNode: Node = null!; //侦擦节点
     public lbTestShoot:Label = null!; //测试射击
+    public guns:Node = null!; //测试射击
 
     public renderNode: Node = null!; //渲染节点
 }

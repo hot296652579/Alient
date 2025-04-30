@@ -25,7 +25,7 @@ export class ButtonComponent extends Component {
     }
 
     private onClickHandler(type: TYPE_ITEM): void {
-        AliensAudioMgr.playOneShot(AliensAudioMgr.getMusicIdName(3), 1.0);
+        // AliensAudioMgr.playOneShot(AliensAudioMgr.getMusicIdName(3), 1.0);
         if (type == TYPE_ITEM.REFRESH) {
             if (!GlobalConfig.isDebug) {
                 AdvertMgr.instance.showReawardVideo(() => {

@@ -26,6 +26,7 @@ export class UI_TimeExpan_Impl extends UI_TimeExpan {
 
     protected onCreated(): void {
         this._addTime = UserManager.instance.userModel.reviveAddTime;
+        this._addTime = 15;//测试
 
         let layout = this.layout as Layout_TimeExpan;
         this.onButtonEvent(layout.btn_get, () => {

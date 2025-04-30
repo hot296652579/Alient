@@ -14,10 +14,15 @@ export class LevelModel {
     /**关卡奖励*/
     public levelReward: number = 0;
 
+    /** 射击次数*/
+    public shootCount: number = 0;
+    /** 击中次数*/
+    public hitCount: number = 0;
+    /** 爆头次数*/
+    public headshotCount: number = 0;
+
     /** 当前关卡等级*/
     public level: number = 1;
-    /** 储存每关星星结算*/
-    public levelStarsMap: Map<number, number> = new Map<number, number>();
     /** 保存可随机的关卡*/
     public randomLevelList: number[] = [];
     /** 输赢*/
@@ -70,6 +75,9 @@ export class LevelModel {
     clearLevel() {
         this.isWin = false;
         this.isEnd = false;
+        this.shootCount = 0;
+        this.hitCount = 0;
+        this.headshotCount = 0;
     }
 
 }
